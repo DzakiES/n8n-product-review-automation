@@ -1,0 +1,503 @@
+{
+  "name": "Product Review Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -144,
+        192
+      ],
+      "id": "1da260bc-592d-41b2-906c-e22f05406925",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "4J1qr684cMXhlTb0",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "POSITIVE",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "51dd4f8c-3d54-4d9f-8ee0-ab7583dc07df"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "9f566a0f-6b29-4501-8388-541596f35a66",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "NEUTRAL",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "952cc535-6bd1-49c6-a629-ee0838e54c33",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "PROBLEM",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        320,
+        -32
+      ],
+      "id": "fa190695-9529-4686-92b7-6163f3f707b4",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://webhook.site/02198336-799b-426a-a275-b94b9b398006",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "subject",
+              "value": "Customer Problem Report"
+            },
+            {
+              "name": "description",
+              "value": "={{ $('First Analysys').item.json.textPlain }}"
+            },
+            {
+              "name": "customer_email",
+              "value": "={{ $('First Analysys').item.json.from }}"
+            },
+            {
+              "name": "date",
+              "value": "={{ $('First Analysys').item.json.date }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        544,
+        80
+      ],
+      "id": "65be3c67-000f-46c6-8f5b-4272ef0ade79",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('First Analysys').item.json.from }}",
+        "subject": "Can we use your feedback as a review?",
+        "message": "=<p>Hi there,</p>  <p>Thank you so much for your kind words about our product!  We really appreciate you taking the time to share your experience.</p>  <p>We'd love to feature your feedback as a review on our website.  Would you give us permission to use it?</p>  <p><strong>Simply reply to this email with:</strong></p> <ul>   <li>✅ <strong>YES</strong> — if you're happy for us to share it</li>   <li>❌ <strong>NO</strong> — if you'd prefer we don't</li> </ul>  <p>Thank you again for your support!</p>  <p>Best regards,<br> The Team</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        544,
+        -96
+      ],
+      "id": "cc40de63-fb35-4620-b704-fcc3c2408d57",
+      "name": "Send a message",
+      "webhookId": "824de5c1-e859-4a35-a1da-33d2c23c0ad2",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "qMce1XJQNH2myfC1",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "94b8f076-03a1-4e13-bd48-063ffa70e7df",
+              "leftValue": "={{ $json.subject }}",
+              "rightValue": "Can we use your feedback as a review?",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -16,
+        384
+      ],
+      "id": "790d8d80-c29f-456b-a4ab-50814c01223d",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        16,
+        592
+      ],
+      "id": "fd4abc5c-f52c-416e-a70e-979806053de6",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "4J1qr684cMXhlTb0",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "YES",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "47be15e8-9b40-447d-9ec1-c0798e8a701b"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "9815ba40-abcf-477d-9342-2134310cd086",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "NO",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        448,
+        384
+      ],
+      "id": "6b7e472a-d31e-4264-8741-e9fe2843a575",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://webhook.site/02198336-799b-426a-a275-b94b9b398006",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "subject",
+              "value": "REVIEW APPROVED - Add to website"
+            },
+            {
+              "name": "customer_email",
+              "value": "={{ $('2nd Analysis').item.json.from }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $('2nd Analysis').item.json.textPlain }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        656,
+        368
+      ],
+      "id": "3f3a363f-9844-42d8-9f1a-b3eab992499b",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailReadImap",
+      "typeVersion": 2.1,
+      "position": [
+        -224,
+        384
+      ],
+      "id": "ad1dd864-1c25-4dbc-98d6-80f579c92f25",
+      "name": "2nd Analysis",
+      "credentials": {
+        "imap": {
+          "id": "6N8VePsUmJqzikm9",
+          "name": "IMAP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailReadImap",
+      "typeVersion": 2.1,
+      "position": [
+        -224,
+        -16
+      ],
+      "id": "7d94cfc2-3904-4257-9413-470fd99c0f7a",
+      "name": "First Analysys",
+      "credentials": {
+        "imap": {
+          "id": "6N8VePsUmJqzikm9",
+          "name": "IMAP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=A customer replied to a permission request to use their \nproduct review on our website.\n\nAnalyze their reply and respond with ONLY one word:\n- YES → if they gave permission\n- NO → if they declined permission\n\nDo not explain. Just one word.\n\nCustomer reply:\n{{ $json.textPlain }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        144,
+        384
+      ],
+      "id": "c2c67818-b1cf-4028-a54a-94f1905cc6c5",
+      "name": "Reply sentiment"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an email classifier for a product review system. \n\nAnalyze the customer email and respond with ONLY one word:\n- POSITIVE → if the message is happy/satisfied and could be used as a product review\n- NEUTRAL → if the message is neither positive nor negative\n- PROBLEM → if the message contains a complaint, issue, or problem\n\nDo not explain. Do not add punctuation. Just one word.\n\nYour Message is:  {{ $json.textPlain }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        0,
+        -16
+      ],
+      "id": "51cd399a-7068-48ed-8c59-2b4b7bef9d70",
+      "name": "Email Feedback Analysis"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Email Feedback Analysis",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Reply sentiment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Reply sentiment",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2nd Analysis": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "First Analysys": {
+      "main": [
+        [
+          {
+            "node": "Email Feedback Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply sentiment": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Feedback Analysis": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "a4f18df6-ab59-4caf-98a4-74c826935653",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "933a06c2b111f542b51e9a7b9c8e2732e01499649d8a620b94eac921169f384d"
+  },
+  "id": "H62IqdTh1sLHVPGQ",
+  "tags": []
+}
